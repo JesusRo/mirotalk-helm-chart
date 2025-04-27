@@ -1,0 +1,31 @@
+{{- if .Values.c2c.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: c2c
+  annotations:
+{{ .Values.c2c.annotations | toYaml | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: c2c
+  replicas: 1
+  revisionHistoryLimit: {{ .Values.common.revisionHistoryLimit }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: c2c
+    spec:
+      containers:
+      - name: mirotalk
+        image: "{{ .Values.c2c.image.name }}:{{ .Values.c2c.image.tag }}"
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: common
+        - secretRef:
+            name: {{ .Values.common.existingSecret | default "common" }}
+{{ end -}}

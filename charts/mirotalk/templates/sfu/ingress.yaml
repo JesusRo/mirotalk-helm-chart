@@ -1,0 +1,23 @@
+{{- if and .Values.sfu.enabled .Values.sfu.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sfu
+  annotations:
+{{- toYaml .Values.sfu.ingress.annotations | nindent 4 }}
+spec:
+  rules:
+    - host: {{ .Values.sfu.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sfu
+                port:
+                  number: 80
+  tls:
+{{- toYaml .Values.sfu.ingress.tls | nindent 4 }}
+{{ end -}}

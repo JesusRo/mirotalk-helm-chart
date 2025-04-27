@@ -1,0 +1,251 @@
+{{- if .Values.sfu.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sfu
+data:
+  # ====================================================
+  # MiroTalk SFU - Environment Configuration
+  # ====================================================
+
+  # config.js - Main configuration with:
+  # - All default values and documentation
+  # - Complex logic and validations
+  # - Safe to commit to version control
+  #
+  # .env - Environment overrides with:
+  # - Secrets and sensitive data (NEVER commit)
+  # - Environment-specific settings
+  # - Simple key=value format
+  #
+  # Why this works best:
+  # 1. SECURITY: Secrets stay out of codebase
+  # 2. FLEXIBILITY: Change settings without redeploy
+  # 3. SAFETY: Built-in defaults prevent crashes
+  # 4. DOCS: config.js explains all options
+  #
+  # Best practice:
+  # - Keep DEFAULT values in config.js
+  # - Keep SECRETS/ENV-SPECIFIC in .env
+  # - Add .env to .gitignore
+  # ====================================================
+
+  # ----------------------------------------------------
+  # 1. Core System Configuration
+  # ----------------------------------------------------
+
+  SFU_ANNOUNCED_IP: '{{ .Values.sfu.config.publicIp | quote }}' # Set your public IP address or domain for WebRTC announcements
+  SFU_LISTEN_IP: '0.0.0.0'                                      # Bind to all interfaces
+  SFU_MIN_PORT: '40000'                                         # Minimum WebRTC port range
+  SFU_MAX_PORT: '40100'                                         # Maximum WebRTC port range
+  SFU_NUM_WORKERS: ''                                           # Number of worker processes (defaults to CPU count)
+  SFU_SERVER: 'true'                                            # Enable/disable WebRTC server (true|false)
+
+  # ----------------------------------------------------
+  # 2. Server Configuration
+  # ----------------------------------------------------
+
+  SERVER_HOST_URL: {{ include "sfu.url" .  | quote }}           # Public server URL (e.g., https://yourdomain.com)
+  SERVER_LISTEN_IP: '0.0.0.0'                                   # Server bind IP
+  SERVER_LISTEN_PORT: '3010'                                    # Port to listen on
+  SERVER_SSL_CERT: '../ssl/cert.pem'                            # Path to SSL certificate
+  SERVER_SSL_KEY: '../ssl/key.pem'                              # Path to SSL private key
+
+
+  # ----------------------------------------------------
+  # 3. Media Handling
+  # ----------------------------------------------------
+
+  # Recording
+  RECORDING_ENABLED: 'false'                                     # Enable recording functionality (true|false)
+  RECORDING_UPLOAD_TO_S3: 'false'                                # Upload recording to AWS S3 bucket [true/false]
+  RECORDING_ENDPOINT: ''                                         # Recording service endpoint es http://localhost:8080
+
+  # Rtmp streaming
+  RTMP_ENABLED: 'true'                                           # Enable RTMP streaming (true|false)
+  RTMP_FROM_FILE: 'true'                                         # Enable local file streaming
+  RTMP_FROM_URL: 'true'                                          # Enable URL streaming
+  RTMP_FROM_STREAM: 'true'                                       # Enable live stream (camera, microphone, screen, window)
+  RTMP_MAX_STREAMS: '1'                                          # Max simultaneous RTMP streams
+  RTMP_USE_NODE_MEDIA_SERVER: 'true'	                           # Use Node Media Server mirotalk-nms Docker image 
+  RTMP_SERVER: rtmp://localhost:1935                             # RTMP server URL
+  RTMP_APP_NAME: 'live'                                          # RTMP application name
+  #Moved to secret RTMP_STREAM_KEY: ''                                            # RTMP stream key (optional)
+  #Moved to secret RTMP_SECRET: 'mirotalkRtmpSecret'                              # RTMP API secret (Must match node-media-server config.js)
+  #Moved to secret RTMP_API_SECRET: 'mirotalkRtmpApiSecret'                       # RTMP internal secret
+  RTMP_EXPIRATION_HOURS: '4'                                     # RTMP URL validity duration (hours)
+  RTMP_FFMPEG_PATH: ''                                           # RTMP Custom path to FFmpeg binary (auto-detected if empty)
+
+  # ----------------------------------------------------
+  # 4. Security & Authentication
+  # ----------------------------------------------------
+
+  # Endpoints
+  HOST_USERS_FROM_DB: 'false'                          # Use DB for user auth (true|false)
+  #Moved to secret USERS_API_SECRET: 'mirotalkweb_default_secret'       # Users API secret key
+  USERS_API_ENDPOINT: 'http://localhost:9000/api/v1/user/isAuth' # User auth endpoint
+  USERS_ROOM_ALLOWED_ENDPOINT: 'http://localhost:9000/api/v1/user/isRoomAllowed' # Room permission endpoint
+  USERS_ROOMS_ALLOWED_ENDPOINT: 'http://localhost:9000/api/v1/user/roomsAllowed' # Allowed rooms endpoint
+  ROOM_EXISTS_ENDPOINT: 'http://localhost:9000/api/v1/room/exists' # Room exists endpoint
+
+  # Users
+  #Moved to secret DEFAULT_USERNAME: 'username'                         # Default admin username
+  #Moved to secret DEFAULT_PASSWORD: 'password'                         # Default admin password
+  #Moved to secret DEFAULT_DISPLAY_NAME: 'username display name'        # Default display name
+  #Moved to secret DEFAULT_ALLOWED_ROOMS: '*'                           # Default allowed rooms all or room1,room2... (comma-separated)
+
+  # Presenters
+  PRESENTER_JOIN_FIRST: 'true'                         # First joiner becomes presenter (true|false)
+
+  # ----------------------------------------------------
+  # 5. API Configuration
+  # ----------------------------------------------------
+
+  API_ALLOW_STATS: 'true'                              # Enable stats API (true|false)
+
+  # ----------------------------------------------------
+  # 6. Third-Party Integrations
+  # ----------------------------------------------------
+
+  # Video AI (HeyGen) Integration
+  VIDEOAI_ENABLED: 'false'                             # Enable video AI avatars (true|false)
+  VIDEOAI_API_KEY: ''                                   # HeyGen API key
+  VIDEOAI_SYSTEM_LIMIT: ''                             # AI system prompt
+
+  # Webhook Notifications
+  WEBHOOK_ENABLED: 'false'                             # Enable webhook notifications (true|false)
+  WEBHOOK_URL: 'https://your-site.com/webhook-endpoint' # Webhook endpoint URL
+
+  # ----------------------------------------------------
+  # 7. UI Customization
+  # ----------------------------------------------------
+
+  # App
+  UI_LANGUAGE: 'en'                                    # Interface language (en, es, fr, etc.)
+  APP_NAME: 'MiroTalk SFU'                             # Application name
+  APP_TITLE: ''                                        # Custom HTML title (leave empty for default)
+  APP_DESCRIPTION: ''                                   # Application description
+  JOIN_DESCRIPTION: ''                                 # Join screen description
+  JOIN_BUTTON_LABEL: 'JOIN ROOM'                       # Join button text
+  JOIN_LAST_LABEL: 'Your recent room:'                 # Recent room label text
+
+  # Site
+  SITE_TITLE: ''                                       # Website title
+  SITE_ICON_PATH: '../images/logo.svg'                 # Favicon path
+  APPLE_TOUCH_ICON_PATH: '../images/logo.svg'          # Apple touch icon path
+  NEW_ROOM_TITLE: ''                                   # New room title
+  NEW_ROOM_DESC: ''                                    # New room description
+
+  # Meta
+  META_DESCRIPTION: ''                                 # HTML meta description
+  META_KEYWORDS: ''                                    # HTML meta keywords
+
+  # HTML
+  SHOW_FEATURES: 'true'                                # Show features section (true|false)
+  SHOW_TEAMS: 'true'                                   # Show teams section (true|false)
+  SHOW_TRY_EASIER: 'true'                              # Show "try easier" section (true|false)
+  SHOW_POWERED_BY: 'true'                              # Show powered by (true|false)
+  SHOW_SPONSORS: 'true'                                # Show sponsors (true|false)
+  SHOW_ADVERTISERS: 'true'                             # Show advertisers (true|false)
+  SHOW_FOOTER: 'true'                                  # Show footer (true|false)
+
+  # About
+  ABOUT_IMAGE_URL: '../images/mirotalk-logo.gif'       # About section image
+  SUPPORT_URL: 'https://codecanyon.net/user/miroslavpejic85' # Support link URL
+  SUPPORT_TEXT: 'Support'                              # Support button text
+  AUTHOR_LABEL: 'Author'                               # Author label text
+  AUTHOR_NAME: 'Miroslav Pejic'                        # Author name
+  LINKEDIN_URL: 'https://www.linkedin.com/in/miroslav-pejic-976a07101/' # LinkedIn profile
+  CONTACT_EMAIL: 'miroslav.pejic.85@gmail.com'         # Contact email
+  EMAIL_SUBJECT: 'MiroTalk SFU info'                   # Email subject
+  COPYRIGHT_TEXT: 'MiroTalk SFU, all rights reserved'  # Copyright text
+
+  # ----------------------------------------------------
+  # 8. UI Button Configuration
+  # ----------------------------------------------------
+
+  # Main Control Buttons
+  SHOW_SHARE_QR: 'true'                                # Show share room QR popup (true|false)
+  SHOW_SHARE_BUTTON: 'true'                            # Show share button (true|false)
+  SHOW_HIDE_ME: 'true'                                 # Show hide me button (true|false)
+  SHOW_AUDIO_BUTTON: 'true'                            # Show audio button (true|false)
+  SHOW_VIDEO_BUTTON: 'true'                            # Show video button (true|false)
+  SHOW_SCREEN_BUTTON: 'true'                           # Show screen share button (true|false)
+  SHOW_SWAP_CAMERA: 'true'                             # Show camera swap button (true|false)
+  SHOW_CHAT_BUTTON: 'true'                             # Show chat button (true|false)
+  SHOW_POLL_BUTTON: 'true'                             # Show poll button (true|false)
+  SHOW_EDITOR_BUTTON: 'true'                           # Show editor button (true|false)
+  SHOW_RAISE_HAND: 'true'                              # Show raise hand button (true|false)
+  SHOW_TRANSCRIPTION: 'true'                           # Show transcription button (true|false)
+  SHOW_WHITEBOARD: 'true'                              # Show whiteboard button (true|false)
+  SHOW_DOCUMENT_PIP: 'true'                            # Show document PiP button (true|false)
+  SHOW_SNAPSHOT: 'true'                                # Show snapshot button (true|false)
+  SHOW_EMOJI: 'true'                                   # Show emoji button (true|false)
+  SHOW_SETTINGS: 'true'                                # Show settings button (true|false)
+  SHOW_ABOUT: 'true'                                   # Show about button (true|false)
+  SHOW_EXIT_BUTTON: 'true'                             # Show exit button (true|false)
+
+  # Settings Panel
+  ENABLE_FILE_SHARING: 'true'                          # Enable file sharing (true|false)
+  SHOW_LOCK_ROOM: 'true'                               # Show lock room button (true|false)
+  SHOW_UNLOCK_ROOM: 'true'                             # Show unlock room button (true|false)
+  SHOW_BROADCASTING: 'true'                            # Show broadcasting button (true|false)
+  SHOW_LOBBY: 'true'                                   # Show lobby button (true|false)
+  SHOW_EMAIL_INVITE: 'true'                            # Show email invitation button (true|false)
+  SHOW_MIC_OPTIONS: 'true'                             # Show mic options button (true|false)
+  SHOW_RTMP_TAB: 'true'                                # Show RTMP tab (true|false)
+  SHOW_MODERATOR_TAB: 'true'                           # Show moderator tab (true|false)
+  SHOW_RECORDING_TAB: 'true'                           # Show recording tab (true|false)
+  HOST_ONLY_RECORDING: 'true'                          # Only host can record (true|false)
+  ENABLE_PUSH_TO_TALK: 'true'                          # Enable push-to-talk (true|false)
+  SHOW_KEYBOARD_SHORTCUTS: 'true'                      # Show keyboard shortcuts (true|false)
+  SHOW_VIRTUAL_BACKGROUND: 'true'                      # Show virtual background (true|false)
+
+  # Video Controls
+  ENABLE_PIP: 'true'                                   # Enable picture-in-picture (true|false)
+  SHOW_MIRROR_BUTTON: 'true'                           # Show mirror button (true|false)
+  SHOW_FULLSCREEN: 'true'                              # Show fullscreen button (true|false)
+  SHOW_SNAPSHOT_BUTTON: 'true'                         # Show snapshot button (true|false)
+  SHOW_MUTE_AUDIO: 'true'                              # Show mute audio button (true|false)
+  SHOW_PRIVACY_TOGGLE: 'true'                          # Show privacy toggle (true|false)
+  SHOW_VOLUME_CONTROL: 'true'                          # Show volume control (true|false)
+  SHOW_FOCUS_BUTTON: 'true'                            # Show focus button (true|false)
+  SHOW_SEND_MESSAGE: 'true'                            # Show send message button (true|false)
+  SHOW_SEND_FILE: 'true'                               # Show send file button (true|false)
+  SHOW_SEND_VIDEO: 'true'                              # Show send video button (true|false)
+  SHOW_MUTE_VIDEO: 'true'                              # Show mute video button (true|false)
+  SHOW_GEO_LOCATION: 'true'                            # Show geoLocation button (true|false)
+  SHOW_BAN_BUTTON: 'true'                              # Show ban button (true|false)
+  SHOW_EJECT_BUTTON: 'true'                            # Show eject button (true|false)
+
+  # Chat Controls
+  SHOW_CHAT_PIN: 'true'                                # Show chat pin button (true|false)
+  SHOW_CHAT_MAXIMIZE: 'true'                           # Show chat maximize button (true|false)
+  SHOW_CHAT_SAVE: 'true'                               # Show chat save button (true|false)
+  SHOW_CHAT_EMOJI: 'true'                              # Show chat emoji button (true|false)
+  SHOW_CHAT_MARKDOWN: 'true'                           # Show chat markdown button (true|false)
+  SHOW_CHAT_SPEECH: 'true'                             # Show chat speech button (true|false)
+  ENABLE_CHAT_GPT: 'true'                              # Enable ChatGPT in chat (true|false)
+
+  # Poll Controls
+  SHOW_POLL_PIN: 'true'                                # Show poll pin button (true|false)
+  SHOW_POLL_MAXIMIZE: 'true'                           # Show poll maximize button (true|false)
+  SHOW_POLL_SAVE: 'true'                               # Show poll save button (true|false)
+
+  # Participants Controls
+  SHOW_SAVE_INFO: 'true'                               # Show save info button (true|false)
+  SHOW_SEND_FILE_ALL: 'true'                           # Show send file to all button (true|false)
+  SHOW_EJECT_ALL: 'true'                               # Show eject all button (true|false)
+
+  # Whiteboard Controls
+  SHOW_WB_LOCK: 'true'                                 # Show whiteboard lock button (true|false)
+
+  # ----------------------------------------------------
+  # 10. Mediasoup Configuration
+  # ----------------------------------------------------
+
+  MEDIASOUP_LOG_LEVEL: 'error'                         # Mediasoup log level (debug, warn, error)
+  config.js: |-
+{{- include "sfu.config" . | nindent 4 }}
+{{ end -}}

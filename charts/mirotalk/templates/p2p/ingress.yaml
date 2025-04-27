@@ -1,0 +1,23 @@
+{{- if and .Values.p2p.enabled .Values.p2p.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: p2p
+  annotations:
+{{- toYaml .Values.p2p.ingress.annotations | nindent 4 }}
+spec:
+  rules:
+    - host: {{ .Values.p2p.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: p2p
+                port:
+                  number: 80
+  tls:
+{{- toYaml .Values.p2p.ingress.tls | nindent 4 }}
+{{ end -}}

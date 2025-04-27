@@ -1,0 +1,10 @@
+{{- if .Values.web.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web
+data:
+  config.js: |-
+{{- include "web.config" . | nindent 4 }}
+{{ end -}}

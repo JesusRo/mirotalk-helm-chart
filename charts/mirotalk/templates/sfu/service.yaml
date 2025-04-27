@@ -1,0 +1,36 @@
+{{- if .Values.sfu.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sfu
+spec:
+  type: ClusterIP
+  ports:
+    - name: sfu
+      port: 80
+      targetPort: 3010
+      protocol: TCP
+  selector:
+    app: sfu
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sfu-video
+spec:
+  type: ClusterIP
+  ports:
+{{- range $i, $v := untilStep 40000 40100 1 }}
+    - name: sfu-{{ $v }}-tcp
+      port: {{ $v }}
+      targetPort: {{ $v }}
+      protocol: TCP
+    - name: sfu-{{ $v }}-udp
+      port: {{ $v }}
+      targetPort: {{ $v }}
+      protocol: UDP
+{{- end }}
+  selector:
+    app: sfu
+{{ end -}}

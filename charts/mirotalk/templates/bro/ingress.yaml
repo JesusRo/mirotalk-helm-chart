@@ -1,0 +1,23 @@
+{{- if and .Values.bro.enabled .Values.bro.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bro
+  annotations:
+{{- toYaml .Values.bro.ingress.annotations | nindent 4 }}
+spec:
+  rules:
+    - host: {{ .Values.bro.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bro
+                port:
+                  number: 80
+  tls:
+{{- toYaml .Values.bro.ingress.tls | nindent 4 }}
+{{ end -}}

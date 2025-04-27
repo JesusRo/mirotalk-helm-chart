@@ -1,0 +1,86 @@
+{{- if .Values.web.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  annotations:
+{{ .Values.web.annotations | toYaml | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: web
+  replicas: 1
+  revisionHistoryLimit: {{ .Values.common.revisionHistoryLimit }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: mirotalk
+        image: "{{ .Values.web.image.name }}:{{ .Values.web.image.tag }}"
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: config
+          mountPath: /src/backend/config.js
+          subPath: config.js
+        envFrom:
+        - configMapRef:
+            name: common
+        - configMapRef:
+            name: web
+        - secretRef:
+            name: {{ .Values.common.existingSecret | default "common" }}
+        - secretRef:
+            name: {{ .Values.web.existingSecret | default "web" }}
+      volumes:
+      - name: config
+        configMap:
+          name: web
+{{- if .Values.mongodb.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  annotations:
+{{ .Values.mongodb.annotations | toYaml | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: "{{ .Values.mongodb.image.name }}:{{ .Values.mongodb.image.tag }}"
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: data
+          mountPath: /data/db
+        env:
+        - name: MONGODB_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: web
+              key: MONGO_USERNAME
+        - name: MONGODB_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: web
+              key: MONGO_PASSWORD
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: mongodb
+{{ end -}}
+{{ end -}}

@@ -1,0 +1,16 @@
+{{- if .Values.p2p.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p2p
+spec:
+  type: ClusterIP
+  ports:
+    - name: p2p
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: p2p
+{{ end -}}

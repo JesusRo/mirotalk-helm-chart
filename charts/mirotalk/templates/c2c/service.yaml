@@ -1,0 +1,16 @@
+{{- if .Values.c2c.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: c2c
+spec:
+  type: ClusterIP
+  ports:
+    - name: c2c
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: c2c
+{{ end -}}

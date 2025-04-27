@@ -1,0 +1,43 @@
+{{- if .Values.sfu.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sfu
+  annotations:
+{{ .Values.sfu.annotations | toYaml | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: sfu
+  replicas: 1
+  revisionHistoryLimit: {{ .Values.common.revisionHistoryLimit }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: sfu
+    spec:
+      containers:
+      - name: mirotalk
+        image: "{{ .Values.sfu.image.name }}:{{ .Values.sfu.image.tag }}"
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: config
+          mountPath: /src/app/src/config.js
+          subPath: config.js
+        envFrom:
+        - configMapRef:
+            name: common
+        - configMapRef:
+            name: sfu
+        - secretRef:
+            name: {{ .Values.common.existingSecret | default "common" }}
+        - secretRef:
+            name: {{ .Values.sfu.existingSecret | default "sfu" }}
+      volumes:
+      - name: config
+        configMap:
+          name: sfu
+{{ end -}}

@@ -1,0 +1,16 @@
+{{- if .Values.bro.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bro
+spec:
+  type: ClusterIP
+  ports:
+    - name: bro
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: bro
+{{ end -}}

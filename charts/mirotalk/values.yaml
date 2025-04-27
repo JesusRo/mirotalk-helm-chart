@@ -1,0 +1,91 @@
+common:
+  redirectUrl: "https://mirotalk.com"
+  revisionHistoryLimit: 3
+  existingSecret: ""
+web:
+  enabled: true
+  existingSecret: ""
+  image:
+    name: "mirotalk/webrtc"
+    tag: "latest"
+    imagePullPolicy: Always
+  annotations: {}
+  ingress:
+    enabled: false
+    host: "mirotalk.web"
+    annotations: {}
+    tls: []
+  config:
+    name: Web
+    logo: ../Images/logo.png
+    github:
+      visible: true
+mongodb:
+  enabled: true
+  image:
+    name: "mongodb/mongodb-community-server"
+    tag: "6.0-ubi8"
+    imagePullPolicy: ifnotPresent
+  annotations: {}
+
+p2p:
+  enabled: true
+  image:
+    name: "mirotalk/p2p"
+    tag: "latest"
+    imagePullPolicy: Always
+  annotations: {}
+  ingress:
+    enabled: false
+    host: "p2p.blabla.burnynet.sh"
+    annotations: {}
+    tls: []
+  config:
+    label: P2P
+
+sfu:
+  enabled: true
+  existingSecret: ""
+  image:
+    name: "mirotalk/sfu"
+    tag: "latest"
+    imagePullPolicy: Always
+  annotations: {}
+  ingress:
+    enabled: false
+    host: "mirotalk.sfu"
+    annotations: {}
+    tls: []
+  config:
+    label: SFU
+    publicIp: 127.0.0.1
+
+c2c:
+  enabled: true
+  image:
+    name: "mirotalk/c2c"
+    tag: "latest"
+    imagePullPolicy: Always
+  annotations: {}
+  ingress:
+    enabled: false
+    host: "mirotalk.c2c"
+    annotations: {}
+    tls: []
+  config:
+    label: C2C
+
+bro:
+  enabled: true
+  image:
+    name: "mirotalk/bro"
+    tag: "latest"
+    imagePullPolicy: Always
+  annotations: {}
+  ingress:
+    enabled: false
+    host: "mirotalk.bro"
+    annotations: {}
+    tls: []
+  config:
+    label: BRO
