@@ -1,3 +1,14 @@
 apiVersion: v1
-entries: {}
-generated: "2025-04-27T16:55:32.077126255+02:00"
+entries:
+  mirotalk:
+  - apiVersion: v2
+    appVersion: latest
+    created: "2025-04-27T15:01:05.671384262Z"
+    description: A Helm chart wrapping MiroTalk applications for Kubernetes
+    digest: 4cfcf02d5eabab2b9d4891599c31daa3e061a1aea6a548cbfa2e48e89e7d50d8
+    name: mirotalk
+    type: application
+    urls:
+    - https://github.com/JesusRo/mirotalk-helm-chart/releases/download/mirotalk-0.0.1/mirotalk-0.0.1.tgz
+    version: 0.0.1
+generated: "2025-04-27T15:01:05.671392598Z"
